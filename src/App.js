@@ -1,6 +1,8 @@
 import React from 'react'
 import Blog from './components/Blog'
 import Notification from './components/Notification'
+import Togglable from './components/Togglable'
+import BlogForm from './components/BlogForm'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import './index.css'
@@ -30,6 +32,7 @@ class App extends React.Component {
     if (loggedInBlogUser) {
       const user = JSON.parse(loggedInBlogUser)
       this.setState({ user })
+      blogService.setToken(user.token)
     }
   }
 
@@ -39,12 +42,14 @@ class App extends React.Component {
 
   createBlog = async (event) => {
     event.preventDefault()
+    this.BlogForm.toggleVisibility()
     try{
       const blog = await blogService.create({
        title: this.state.title,
        author: this.state.author,
        url: this.state.url
       })
+
       this.setState({ message: `a new blog '${blog.title}' by ${blog.author} added` })
       this.setState({ blogs:[...this.state.blogs, blog]})
       this.setState({ title: '', author: '', url: '' })
@@ -61,6 +66,30 @@ class App extends React.Component {
     }
   }
 
+  addLike = async (blog) => {
+    try{
+      const likedBlog = await blogService.update({
+        likes: blog.likes,
+        author: blog.author,
+        title: blog.title,
+        url: blog.url
+      }, blog._id)
+      
+
+      this.setState({ message: `Blog '${likedBlog.title}' has been liked.` })
+      setTimeout(() => {
+        this.setState({ message: null })
+      }, 5000)
+    } catch (exception) {
+      this.setState({
+        error: 'Something went wrong..'
+      })
+      setTimeout(() => {
+        this.setState({ error: null })
+      }, 5000)
+    }
+  }
+
   login = async (event) => {
     event.preventDefault()
     try{
@@ -68,7 +97,7 @@ class App extends React.Component {
         username: this.state.username,
         password: this.state.password
       })
-      blogService.setToken(user.token)      
+      blogService.setToken(user.token)
       window.localStorage.setItem('loggedInBlogUser', JSON.stringify(user))
 
       this.setState({ username: '', password: '', user, message: `Logged in as ${user.username}` })
@@ -133,43 +162,18 @@ class App extends React.Component {
           <input type="button" value="logout" style={{margin: 5}} onClick={this.logout}/>
         </p>
 
-        <div>
-          <form onSubmit={this.createBlog}>
-            <div>
-              title:
-              <input
-                type="text"
-                name="title"
-                value={this.state.title}
-                onChange={this.handleTextFieldChange}
-              />
-            </div>
-            <div>
-              author:
-              <input
-                type="text"
-                name="author"
-                value={this.state.author}
-                onChange={this.handleTextFieldChange}
-              />
-            </div>
-            <div>
-              url:
-              <input
-                type="text"
-                name="url"
-                value={this.state.url}
-                onChange={this.handleTextFieldChange}
-              />
-            </div>
-            <div>
-              <button type="submit">create</button>
-            </div>
-          </form>
-        </div>
+        <Togglable buttonLabel="new blog" ref={ component => this.BlogForm = component }>
+          <BlogForm 
+            onSubmit={this.createBlog}
+            title={this.state.title}
+            author={this.state.author}
+            url={this.state.url}
+            handleChange={this.handleTextFieldChange}
+          />
+        </Togglable>
 
         {this.state.blogs.map(blog => 
-          <Blog key={blog._id} blog={blog}/>
+          <Blog key={blog._id} blog={blog} addLike={this.addLike}/>
         )}
       </div>
     )

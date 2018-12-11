@@ -66,6 +66,27 @@ class App extends React.Component {
     }
   }
 
+  deleteBlog = async (blog) => {
+    try{
+      await blogService.remove(blog._id)
+      this.setState({ message: "Blog deleted successfully." })
+      const updatedBlogs = this.state.blogs.filter(b => b._id !== blog._id)
+      this.setState({
+        blogs: updatedBlogs
+      })
+      setTimeout(() => {
+        this.setState({ message: null })
+      }, 5000)
+    } catch (exception) {
+      this.setState({
+        error: 'Something went wrong.'
+      })
+      setTimeout(() => {
+        this.setState({ error: null })
+      }, 5000)
+    }
+  }
+
   addLike = async (blog) => {
     try{
       const likedBlog = await blogService.update({
@@ -172,8 +193,14 @@ class App extends React.Component {
           />
         </Togglable>
 
-        {this.state.blogs.map(blog => 
-          <Blog key={blog._id} blog={blog} addLike={this.addLike}/>
+        {this.state.blogs.sort((a, b) => b.likes - a.likes).map(blog => 
+          <Blog 
+            key={blog._id} 
+            blog={blog} 
+            addLike={this.addLike}
+            deleteBlog={this.deleteBlog}
+            user={this.state.user}
+          />
         )}
       </div>
     )

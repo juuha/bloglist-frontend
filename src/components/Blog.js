@@ -55,13 +55,15 @@ class Blog extends React.Component {
 
     return (
       <div style={blogStyle}>
-        <a onClick={this.toggleVisible}>
-        {this.props.blog.title} {this.props.blog.author}
-        </a>
-        <div style={showWhenVisible}>
+        <div className="visible">
+          <a onClick={this.toggleVisible} className="button">
+          {this.props.blog.title} {this.props.blog.author}
+          </a>
+        </div>
+        <div style={showWhenVisible} className="hidden">
           <a href={this.props.blog.url}>{this.props.blog.url}</a><br/>
-          {this.state.likes} likes <button style={{backgroundColor: "lime"}} onClick={this.handleClickLike}>like</button> <br/>
-          added by {username}
+          {this.state.likes} likes <button style={{backgroundColor: "lime"}} onClick={this.handleClickLike}>like</button><br/>
+          added by {username} <br/>
           <div style={showForOwner}>
             <button style={{backgroundColor: "pink"}} onClick={this.handleClickDelete}>delete</button>
           </div>

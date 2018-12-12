@@ -118,6 +118,7 @@ class App extends React.Component {
         username: this.state.username,
         password: this.state.password
       })
+      console.log(JSON.stringify(user))
       blogService.setToken(user.token)
       window.localStorage.setItem('loggedInBlogUser', JSON.stringify(user))
 
@@ -144,9 +145,11 @@ class App extends React.Component {
   }
 
   render() {
-    if (this.state.user === null) {
+    const user = JSON.parse(window.localStorage.getItem('loggedInBlogUser'))
+
+    if (user === null) {
       return (
-        <div>
+        <div className="notLogged">
           <Notification error={this.state.error} message={this.state.message} />
           <h2>Log in to application</h2>
           <form onSubmit={this.login}>
@@ -176,10 +179,10 @@ class App extends React.Component {
       )
     }
     return (
-      <div>
+      <div className="logged">
         <h2>blogs</h2>
         <Notification error={this.state.error} message={this.state.message} />
-        <p>{this.state.user.name} logged in
+        <p>{user.name} logged in
           <input type="button" value="logout" style={{margin: 5}} onClick={this.logout}/>
         </p>
 
@@ -199,7 +202,7 @@ class App extends React.Component {
             blog={blog} 
             addLike={this.addLike}
             deleteBlog={this.deleteBlog}
-            user={this.state.user}
+            user={user}
           />
         )}
       </div>
